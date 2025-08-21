@@ -1,59 +1,23 @@
-variable "project_id" {
-  description = "The GCP project ID"
+variable "project" {
+  description = "this is gcp project-id"
   type        = string
   default     = "new-project-462710"
 }
 
-variable "cluster_name" {
-  description = "The name of the GKE cluster"
-  type        = string
-  default     = "my-gke-cluster"
-}
-
 variable "region" {
-  description = "The GCP region"
+  description = "this is gcp region"
   type        = string
   default     = "us-central1"
 }
 
-variable "subnet_cidr" {
-  description = "CIDR range for the subnet"
+variable "zone" {
+  description = "this is gcp zone"
   type        = string
-  default     = "10.0.0.0/20"
+  default     = "us-central1-a"
 }
 
-variable "pods_cidr" {
-  description = "CIDR range for pods"
+variable "K8s_version" {
+  description = "this is the gke version"
   type        = string
-  default     = "10.1.0.0/16"
-}
-
-variable "services_cidr" {
-  description = "CIDR range for services"
-  type        = string
-  default     = "10.2.0.0/20"
-}
-
-variable "master_cidr" {
-  description = "CIDR range for the master"
-  type        = string
-  default     = "172.16.0.0/28"
-}
-
-variable "machine_type" {
-  description = "Machine type for nodes"
-  type        = string
-  default     = "e2-medium"
-}
-
-variable "disk_size" {
-  description = "Disk size for nodes in GB"
-  type        = number
-  default     = 100
-}
-
-variable "ssh_source_ranges" {
-  description = "Source IP ranges for SSH access"
-  type        = list(string)
-  default     = ["0.0.0.0/0"] # Restrict this in production
+  default     = "1.31.6-gke.1020000"
 }
