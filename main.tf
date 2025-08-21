@@ -22,7 +22,7 @@ provider "google" {
 resource "google_container_cluster" "primary" {
   # --- ⚠️ REQUIRED ---
   # Provide a unique name for your GKE cluster.
-  name = "my-gke-cluster"
+  name = "my-gke-cluster-tamiri"
 
   # --- FIX FOR QUOTA ERROR ---
   # Change the location from a region ("us-central1") to a specific zone
