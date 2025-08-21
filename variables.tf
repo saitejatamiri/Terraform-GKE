@@ -1,6 +1,7 @@
 variable "project_id" {
   description = "The GCP project ID"
   type        = string
+  default     = "new-project-462710"
 }
 
 variable "cluster_name" {
@@ -49,4 +50,10 @@ variable "disk_size" {
   description = "Disk size for nodes in GB"
   type        = number
   default     = 100
+}
+
+variable "ssh_source_ranges" {
+  description = "Source IP ranges for SSH access"
+  type        = list(string)
+  default     = ["0.0.0.0/0"] # Restrict this in production
 }
