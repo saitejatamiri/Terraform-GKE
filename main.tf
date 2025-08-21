@@ -1,80 +1,53 @@
-resource "google_compute_network" "custom_network" {
-  name                    = "custom-vpc"
-  auto_create_subnetworks = false
-}
+terraform {
+  required_version = ">= 1.0"
 
-resource "google_compute_subnetwork" "custom-subnet" {
-  name          = "custom-subnetwork"
-  ip_cidr_range = "10.10.0.0/16"
-  region        = var.region
-  network       = google_compute_network.custom_network.id
-}
-
-# Firewall-1 for Internal Communication
-resource "google_compute_firewall" "allow-internal" {
-  name    = "internal-firewall"
-  network = google_compute_network.custom_network.id
-
-  allow {
-    protocol = "all"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 4.0.0"
+    }
   }
-
-  source_ranges = ["10.10.0.0/16"]
 }
 
-# Firewall-2 for External Access SSH, icmp, RDP
-resource "google_compute_firewall" "allow-external" {
-  name    = "external-firewall"
-  network = google_compute_network.custom_network.id
+provider "google" {
+  # --- ⚠️ REQUIRED ---
+  # Replace "your-gcp-project-id" with your actual Google Cloud Project ID.
+  project = "new-project-462710"
 
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22", "3389"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
+  # --- Optional ---
+  # You can change the region to your preferred location.
+  region = "us-central1"
 }
 
-# Firewall-3 for GKE Communication
-resource "google_compute_firewall" "allow-gke" {
-  name    = "gke-firewall"
-  network = google_compute_network.custom_network.id
-
-  allow {
-    protocol = "tcp"
-    ports    = ["443", "10250", "15017"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-}
-
-
-# GKE Cluster
 resource "google_container_cluster" "primary" {
-  project             = var.project
-  name                = "terraform-gke-cluster"
-  location            = var.region
-  network             = google_compute_network.custom_network.id
-  subnetwork          = google_compute_subnetwork.custom-subnet.id
+  # --- ⚠️ REQUIRED ---
+  # Provide a unique name for your GKE cluster.
+  name = "my-gke-cluster"
+
+  # --- FIX FOR QUOTA ERROR ---
+  # Change the location from a region ("us-central1") to a specific zone
+  # ("us-central1-a") to create a ZONAL cluster instead of a REGIONAL one.
+  # This creates nodes in only one zone, significantly reducing resource usage.
+  location = "us-central1-a"
   deletion_protection = false
-  remove_default_node_pool = true
-  initial_node_count       = 1  
-}
 
-resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name           = "my-node-pool"
-  cluster        = google_container_cluster.primary.name
-  location       = google_container_cluster.primary.location
-  node_count     = 1  
+  # The number of nodes to create in this cluster's default node pool.
+  initial_node_count = 2
 
+  # Configuration for the nodes in the default node pool.
   node_config {
-    machine_type   = "e2-medium"  # Use a smaller instance to reduce storage requirements
-    disk_size_gb   = "15"
-    disk_type      = "pd-standard"
-    image_type     = "UBUNTU_CONTAINERD"
+    # The machine type to use for the nodes. "e2-medium" is a cost-effective choice.
+    machine_type = "e2-medium"
+
+    # Using "pd-standard" uses standard hard drives, avoiding SSD quota issues.
+    disk_type = "pd-standard"
+
+    # Explicitly set a smaller disk size to further reduce resource consumption.
+    disk_size_gb = 30
+    service_account = "new-service@new-project-462710.iam.gserviceaccount.com"
+    # Standard OAuth scopes required for GKE nodes to function correctly.
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
   }
 }
